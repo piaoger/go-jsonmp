@@ -15,7 +15,7 @@
 package jsonmp
 
 import (
-	"encoding/json"
+	"github.com/json-iterator/go"
 	"io"
 )
 
@@ -35,11 +35,11 @@ func Patch(a, b []byte) ([]byte, error) {
 
 	var i []interface{}
 
-	if err := json.Unmarshal(a, &i); err != nil {
+	if err := jsoniter.Unmarshal(a, &i); err != nil {
 		return nil, err
 	}
 
-	return json.Marshal(patch(i[0], i[1]))
+	return jsoniter.Marshal(patch(i[0], i[1]))
 }
 
 // PatchValue patches the interface values,
@@ -70,7 +70,7 @@ func PatchValueWithBytes(a interface{}, c []byte, dst interface{}) error {
 
 	var b interface{}
 
-	if err = json.Unmarshal(c, &b); err != nil {
+	if err = jsoniter.Unmarshal(c, &b); err != nil {
 		return err
 	}
 
@@ -89,7 +89,7 @@ func PatchValueWithReader(a interface{}, r io.Reader, dst interface{}) error {
 
 	var b interface{}
 
-	if err = json.NewDecoder(r).Decode(&b); err != nil {
+	if err = jsoniter.NewDecoder(r).Decode(&b); err != nil {
 		return err
 	}
 
@@ -99,13 +99,13 @@ func PatchValueWithReader(a interface{}, r io.Reader, dst interface{}) error {
 // marshalValue is a helper function for patching
 // and putting the result to a destination interface.
 func marshalValue(a, b, dst interface{}) error {
-	c, err := json.Marshal(patch(a, b))
+	c, err := jsoniter.Marshal(patch(a, b))
 
 	if err != nil {
 		return err
 	}
 
-	return json.Unmarshal(c, &dst)
+	return jsoniter.Unmarshal(c, &dst)
 }
 
 // Patcher reads the patch data from the Reader
@@ -133,7 +133,7 @@ func (p *Patcher) Patch(c []byte) error {
 
 	var a interface{}
 
-	if err := json.Unmarshal(c, &a); err != nil {
+	if err := jsoniter.Unmarshal(c, &a); err != nil {
 		return err
 	}
 
@@ -162,13 +162,13 @@ func (p *Patcher) PatchValue(a interface{}) error {
 func read(r io.Reader) (interface{}, error) {
 	var i interface{}
 
-	err := json.NewDecoder(r).Decode(&i)
+	err := jsoniter.NewDecoder(r).Decode(&i)
 
 	return i, err
 }
 
 func (p *Patcher) write(a, b interface{}) error {
-	return json.NewEncoder(p.w).Encode(patch(a, b))
+	return jsoniter.NewEncoder(p.w).Encode(patch(a, b))
 }
 
 // coerces the original interface into a vanilla interface.
@@ -186,7 +186,7 @@ func coerce(i interface{}) (interface{}, error) {
 		return i, nil
 	}
 
-	b, err := json.Marshal(i)
+	b, err := jsoniter.Marshal(i)
 
 	if err != nil {
 		return nil, err
@@ -194,7 +194,7 @@ func coerce(i interface{}) (interface{}, error) {
 
 	var v interface{}
 
-	return v, json.Unmarshal(b, &v)
+	return v, jsoniter.Unmarshal(b, &v)
 }
 
 // patches A with B and returns the result
